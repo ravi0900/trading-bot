@@ -1,0 +1,6 @@
+2026-03-14 07:38:15,762 - bot.client - INFO - Placing BUY MARKET order for 0.01 BTCUSDT
+2026-03-14 07:38:16,443 - bot.orders - INFO - Order executed successfully: {'orderId': 12799895095, 'status': 'NEW', 'executedQty': '0.000', 'avgPrice': '0.00'}
+2026-03-14 07:52:33,853 - bot.client - INFO - Placing SELL MARKET order for 0.01 BTCUSDT
+2026-03-14 07:52:34,954 - bot.orders - INFO - Order executed successfully: {'orderId': 12800099700, 'status': 'NEW', 'executedQty': '0.000', 'avgPrice': '0.00'}
+2026-03-14 07:54:36,759 - bot.client - INFO - Placing SELL LIMIT order for 0.05 BTCUSDT
+2026-03-14 07:54:37,992 - bot.orders - INFO - Order executed successfully: {'orderId': 12800129147, 'status': 'NEW', 'executedQty': '0.000', 'avgPrice': '0.00'}
