@@ -9,31 +9,46 @@ A simplified Python trading bot to place Market and Limit orders on the Binance 
 
 ## Setup
 
-1. **Clone the repository** (if applicable):
+1. **Clone the repository** (or navigate to your project directory):
    ```bash
-   git clone <repository_url>
    cd trading_bot
    ```
 
-2. **Install dependencies**:
+2. **Set up a virtual environment** (recommended):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
+
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Configure API Credentials**:
-   To interact with the Binance Futures Testnet, you need to set your API key and secret. Provide them in a `.env` file at the root of the project.
-   
-   ```bash
-   cp .env.example .env
-   # Edit .env and paste your credentials
-   ```
+4. **Configure your API keys**:
+   - Copy `.env.example` to a new file named `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Open `.env` and configure your `BINANCE_API_KEY` and `BINANCE_API_SECRET`.
 
 ## Usage
 
-The application provides a clean command-line interface (CLI) to place orders.
+This project supports both a modern graphical interface and a command-line interface.
+
+### Web UI (Recommended)
+You can start a lightweight web server that provides a clean, fast dashboard for executing orders:
 
 ```bash
-python3 cli.py --symbol <SYMBOL> --side <BUY|SELL> --type <MARKET|LIMIT> --quantity <QTY> [--price <PRICE>]
+python app.py
+```
+*Then open `http://localhost:5000` in your web browser.*
+
+### Command-Line Interface
+Alternatively, run the script from the command line using `bot/cli.py`:
+
+```bash
+python -m bot.cli --symbol <SYMBOL> --side <BUY|SELL> --type <MARKET|LIMIT> --quantity <QTY> [--price <PRICE>]
 ```
 
 ### Examples

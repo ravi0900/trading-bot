@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Bot Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <h1>TradeBot Pro</h1>
+            </div>
+            <div class="status-indicator">
+                <span class="dot live"></span>
+                <span>Testnet Connected</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="card order-card">
+                <h2>New Order</h2>
+                <form id="orderForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="symbol">Symbol</label>
+                            <input type="text" id="symbol" name="symbol" value="BTCUSDT" placeholder="BTCUSDT" class="input-field" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row split">
+                        <div class="form-group">
+                            <label>Side</label>
+                            <div class="radio-group">
+                                <label class="radio-card buy">
+                                    <input type="radio" name="side" value="BUY" checked>
+                                    <span class="label-text">BUY</span>
+                                </label>
+                                <label class="radio-card sell">
+                                    <input type="radio" name="side" value="SELL">
+                                    <span class="label-text">SELL</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Type</label>
+                            <div class="radio-group">
+                                <label class="radio-card">
+                                    <input type="radio" name="order_type" value="MARKET" checked onchange="togglePriceField()">
+                                    <span class="label-text">MARKET</span>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="order_type" value="LIMIT" onchange="togglePriceField()">
+                                    <span class="label-text">LIMIT</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row split">
+                        <div class="form-group">
+                            <label for="quantity">Quantity (BTC)</label>
+                            <input type="number" id="quantity" name="quantity" step="0.001" min="0.001" placeholder="0.01" class="input-field" required>
+                        </div>
+                        
+                        <div class="form-group" id="priceGroup" style="opacity: 0.5; pointer-events: none;">
+                            <label for="price">Limit Price</label>
+                            <input type="number" id="price" name="price" step="0.1" placeholder="0.00" class="input-field" disabled>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-primary">
+                        <span class="btn-text">Execute Order</span>
+                        <div class="loader" id="btnLoader" style="display: none;"></div>
+                    </button>
+                </form>
+            </div>
+
+            <div class="card result-card">
+                <h2>Terminal Output</h2>
+                <div class="terminal" id="terminal">
+                    <div class="log-entry system">System initialized. Ready for orders...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function togglePriceField() {
+            const isLimit = document.querySelector('input[name="order_type"][value="LIMIT"]').checked;
+            const priceGroup = document.getElementById('priceGroup');
+            const priceInput = document.getElementById('price');
+            
+            if (isLimit) {
+                priceGroup.style.opacity = '1';
+                priceGroup.style.pointerEvents = 'auto';
+                priceInput.disabled = false;
+                priceInput.required = true;
+                
+                // Fetch rough market price if we wanted to
+            } else {
+                priceGroup.style.opacity = '0.5';
+                priceGroup.style.pointerEvents = 'none';
+                priceInput.disabled = true;
+                priceInput.required = false;
+                priceInput.value = '';
+            }
+        }
+
+        function appendLog(message, type = 'system') {
+            const terminal = document.getElementById('terminal');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            
+            terminal.appendChild(entry);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoader = document.getElementById('btnLoader');
+            
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // UI State loading
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'block';
+            
+            const sideColor = data.side === 'BUY' ? 'text-green' : 'text-red';
+            appendLog(`Placing <span class="${sideColor}">${data.side}</span> ${data.order_type} for ${data.quantity} ${data.symbol}...`, 'info');
+
+            try {
+                const response = await fetch('/api/order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const order = result.data;
+                    const details = `Order #${order.orderId} [${order.status}] - Execution Qty: ${order.executedQty} @ ${order.avgPrice || order.price}`;
+                    appendLog(`✅ Success: ${details}`, 'success');
+                } else {
+                    appendLog(`❌ Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                appendLog(`❌ Network Error: ${error.message}`, 'error');
+            } finally {
+                // UI State restore
+                submitBtn.disabled = false;
+                btnText.style.display = 'block';
+                btnLoader.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -78,6 +78,7 @@ class BinanceTestnetClient:
             "side": side,
             "type": order_type,
             "quantity": quantity,
+            "newOrderRespType": "RESULT"
         }
         
         if order_type == "LIMIT":

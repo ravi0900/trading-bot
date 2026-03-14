@@ -22,8 +22,9 @@ def execute_order(symbol: str, side: str, order_type: str, quantity: float, pric
         order_details = {
             "orderId": response.get("orderId"),
             "status": response.get("status"),
-            "executedQty": response.get("executedQty"),
-            "avgPrice": response.get("avgPrice")
+            "price": response.get("price"),
+            "avgPrice": response.get("avgPrice"),
+            "executedQty": response.get("executedQty")
         }
         
         logger.info(f"Order executed successfully: {order_details}")
